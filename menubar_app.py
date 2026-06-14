@@ -237,7 +237,7 @@ class VoiceApp(rumps.App):
         alert = NSAlert.alloc().init()
         alert.setMessageText_("快速加詞／修正")
         alert.setInformativeText_(
-            "輸入一個詞讓它認得；或用「錯＝對」修正常錯字（例：陸老闆＝路老闆）"
+            "輸入一個詞讓它認得；或用「錯＝對」修正常錯字（例：錯字＝正確字）"
         )
         alert.addButtonWithTitle_("加入")
         alert.addButtonWithTitle_("取消")
