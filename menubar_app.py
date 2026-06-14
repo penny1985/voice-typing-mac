@@ -45,16 +45,20 @@ class WaveView(NSView):
     def drawRect_(self, rect):
         b = self.bounds()
         W, H = b.size.width, b.size.height
-        # 半透明深色圓角底
-        NSColor.colorWithCalibratedWhite_alpha_(0.12, 0.92).set()
-        NSBezierPath.bezierPathWithRoundedRect_xRadius_yRadius_(b, 14, 14).fill()
-        # 長條
+        # 白色圓角底 + 淺灰邊框（白底桌面也看得到輪廓）
+        bg = NSBezierPath.bezierPathWithRoundedRect_xRadius_yRadius_(b, 14, 14)
+        NSColor.colorWithCalibratedWhite_alpha_(1.0, 0.97).set()
+        bg.fill()
+        NSColor.colorWithCalibratedWhite_alpha_(0.0, 0.12).set()
+        bg.setLineWidth_(1.0)
+        bg.stroke()
+        # 黑色長條
         bw, gap = 5.0, 5.0
         total = WAVE_BARS * bw + (WAVE_BARS - 1) * gap
         x = (W - total) / 2.0
         cy = H / 2.0
         maxh = H - 20
-        NSColor.colorWithCalibratedRed_green_blue_alpha_(1.0, 0.27, 0.27, 1.0).set()
+        NSColor.colorWithCalibratedWhite_alpha_(0.0, 1.0).set()
         for v in self._levels:
             bh = max(4.0, min(maxh, v * maxh))
             bar = NSMakeRect(x, cy - bh / 2.0, bw, bh)
@@ -151,6 +155,7 @@ class VoiceApp(rumps.App):
         self.panel.setOpaque_(False)
         self.panel.setBackgroundColor_(NSColor.clearColor())
         self.panel.setIgnoresMouseEvents_(True)
+        self.panel.setHasShadow_(True)
         self.panel.setHidesOnDeactivate_(False)
         self.panel.setBecomesKeyOnlyIfNeeded_(True)
         self.panel.setCollectionBehavior_(

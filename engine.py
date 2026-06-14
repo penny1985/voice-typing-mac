@@ -53,6 +53,8 @@ PAUSE_GAP = 0.5
 PAUSE_PUNCT = "、"
 # 已是這些結尾就不再補標點，避免重複
 ENDING_PUNCT = "。！？，、；：、\n 　"
+# 句子結尾標點：只有句子講完又停頓才換段落，避免講到一半被硬分
+SENTENCE_END = "。！？"
 
 # 半形標點 → 中文全形（只在中文字旁邊轉，避免破壞 3.14、v1.5）
 PUNCT = {",": "，", ".": "。", "!": "！", "?": "？", ":": "：", ";": "；"}
@@ -101,6 +103,7 @@ def tidy(text):
     if not text:
         return text
     text = re.sub(r"^[嗯呃欸啊]+[，,、。 \t]*", "", text)                     # 去開頭語氣詞
+    text = re.sub(r"(\S+)(?:\s+\1){2,}", r"\1", text)                        # 收掉疊字幻覺（Penny Penny Penny→Penny）
     # 半形標點 → 全形（僅在中文字旁；只吃空格不吃換行，保住分段）
     text = re.sub(r"([一-鿿])[ \t]*([,.!?:;])", lambda m: m.group(1) + PUNCT[m.group(2)], text)
     text = re.sub(r"([,.!?:;])[ \t]*([一-鿿])", lambda m: PUNCT[m.group(1)] + m.group(2), text)
@@ -165,9 +168,10 @@ def segments_to_text(result):
             continue
         if prev_end is not None:
             gap = s.get("start", 0) - prev_end
-            if gap > PARAGRAPH_GAP:
-                out += "\n\n"                              # 長停頓 → 換段落
-            elif gap > PAUSE_GAP and out and out[-1] not in ENDING_PUNCT:
+            last = out[-1] if out else ""
+            if gap > PARAGRAPH_GAP and last in SENTENCE_END:
+                out += "\n\n"                              # 句子已結束 + 長停頓 → 換段落
+            elif gap > PAUSE_GAP and out and last not in ENDING_PUNCT:
                 out += PAUSE_PUNCT                          # 短停頓 → 補頓號
         out += t
         prev_end = s.get("end", prev_end)
