@@ -24,8 +24,8 @@
 需先有 [Homebrew](https://brew.sh)。然後：
 
 ```bash
-git clone https://github.com/penny1985/voice-typing.git
-cd voice-typing
+git clone https://github.com/penny1985/voice-typing-mac.git
+cd voice-typing-mac
 bash install.sh
 ```
 
