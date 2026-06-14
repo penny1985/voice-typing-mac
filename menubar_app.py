@@ -29,7 +29,7 @@ WAVE_GAIN = 14         # 音量放大倍率（讓長條跳得明顯）
 
 
 class WaveView(NSView):
-    """錄音波形：一排紅色長條，高度跟著即時音量捲動跳動。"""
+    """錄音波形：一排長條，高度跟著即時音量捲動跳動。"""
 
     def initWithFrame_(self, frame):
         self = objc.super(WaveView, self).initWithFrame_(frame)
