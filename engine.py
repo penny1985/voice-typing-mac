@@ -63,22 +63,16 @@ PUNCT = {",": "，", ".": "。", "!": "！", "?": "？", ":": "：", ";": "；"}
 DEFAULT_PHRASES = """\
 # 一行一個你常用的詞、人名、專有名詞，存檔後即時生效。
 # 開頭是 # 的行會被忽略，當作說明。
-閱讀塗鴉實驗室
-陳沛孺
-Penny
-路老闆
-AEO
-SEO
-GEO
-PAYUNi
-Claude Code
-AI 應用講師
+# 範例（請刪掉換成你自己的）：
+# 你的公司或品牌名稱
+# 常用人名
+# 專業術語或縮寫
 """
 
 # 修正規則第一次不存在時的預設
 DEFAULT_REPLACE = """\
 # 用「錯=對」格式，一行一條，存檔後即時生效。
-# 例如它常把「路老闆」聽成「陸老闆」，就寫一行：陸老闆=路老闆
+# 例如它常把某個詞聽錯，就寫一行：錯的字=對的字
 # 開頭是 # 的行會被忽略。
 """
 
@@ -103,7 +97,7 @@ def tidy(text):
     if not text:
         return text
     text = re.sub(r"^[嗯呃欸啊]+[，,、。 \t]*", "", text)                     # 去開頭語氣詞
-    text = re.sub(r"(\S+)(?:\s+\1){2,}", r"\1", text)                        # 收掉疊字幻覺（Penny Penny Penny→Penny）
+    text = re.sub(r"(\S+)(?:\s+\1){2,}", r"\1", text)                        # 收掉連續重複的疊字幻覺
     # 半形標點 → 全形（僅在中文字旁；只吃空格不吃換行，保住分段）
     text = re.sub(r"([一-鿿])[ \t]*([,.!?:;])", lambda m: m.group(1) + PUNCT[m.group(2)], text)
     text = re.sub(r"([,.!?:;])[ \t]*([一-鿿])", lambda m: PUNCT[m.group(1)] + m.group(2), text)
