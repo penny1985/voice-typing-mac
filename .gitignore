@@ -1,0 +1,16 @@
+# Python 虛擬環境（每台機器自己建，不進 git）
+venv/
+__pycache__/
+*.pyc
+
+# Whisper 模型快取（約 1.5GB，存在 ~/.cache/huggingface，不該進 git）
+*.mlx
+models/
+
+# 個人資料：慣用語、修正規則、歷史紀錄含個人內容，不進 git
+慣用語.txt
+修正規則.txt
+歷史紀錄.txt
+
+# 系統檔
+.DS_Store

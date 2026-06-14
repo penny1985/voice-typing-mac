@@ -1,0 +1,6 @@
+mlx-whisper
+sounddevice
+numpy
+pynput
+opencc-python-reimplemented
+rumps
