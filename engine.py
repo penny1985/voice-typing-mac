@@ -172,6 +172,17 @@ def segments_to_text(result):
     return out.strip()
 
 
+def model_is_cached():
+    """模型是否已下載完成（用來在首次下載時顯示提示，避免被誤會成當機）。"""
+    d = os.path.expanduser("~/.cache/huggingface/hub/models--" + MODEL.replace("/", "--"))
+    if not os.path.isdir(d):
+        return False
+    for _root, _dirs, files in os.walk(d):
+        if any(f.endswith(".incomplete") for f in files):
+            return False     # 還有未下載完的暫存檔
+    return True
+
+
 class Engine:
     """toggle 錄音與轉錄引擎。透過 on_status 回呼通知介面狀態。"""
 
@@ -241,7 +252,8 @@ class Engine:
 
     def _transcribe_and_paste(self, audio):
         try:
-            self.on_status("transcribing")
+            # 首次使用模型還沒下載完，顯示「下載中」避免被誤會成當機
+            self.on_status("transcribing" if model_is_cached() else "downloading")
             result = mlx_whisper.transcribe(
                 audio,
                 path_or_hf_repo=MODEL,
