@@ -12,7 +12,8 @@ import objc
 import rumps
 from AppKit import (
     NSApplication, NSApplicationActivationPolicyAccessory,
-    NSEvent, NSEventMaskFlagsChanged, NSView, NSPanel, NSColor, NSBezierPath,
+    NSEvent, NSEventMaskFlagsChanged, NSEventMaskKeyDown,
+    NSEventTypeKeyDown, NSView, NSPanel, NSColor, NSBezierPath,
     NSScreen, NSBackingStoreBuffered, NSStatusWindowLevel,
     NSWindowStyleMaskBorderless, NSWindowCollectionBehaviorCanJoinAllSpaces,
     NSWindowCollectionBehaviorStationary,
@@ -130,13 +131,13 @@ class VoiceApp(rumps.App):
         self.engine = Engine(on_status=self._record_status)
 
         # 用 macOS 原生 NSEvent 監看（在主執行緒，避開 pynput 的跨執行緒崩潰）
-        # 全域：其他 App 在前景時也收得到（需輔助使用權限）；本地：本 App 在前景時
-        self._gmon = NSEvent.addGlobalMonitorForEventsMatchingMask_handler_(
-            NSEventMaskFlagsChanged, self._on_flags
-        )
-        self._lmon = NSEvent.addLocalMonitorForEventsMatchingMask_handler_(
-            NSEventMaskFlagsChanged, self._on_flags_local
-        )
+        # 同時監看修飾鍵變化與一般按鍵，才能判斷「單純點按」還是「組合鍵」
+        # 單純點一下右⌘/右⌥（中間沒按別的鍵）才觸發，避免 Cmd+A、Cmd+C 誤觸
+        self._rcmd_down = self._rcmd_clean = False
+        self._ropt_down = self._ropt_clean = False
+        mask = NSEventMaskFlagsChanged | NSEventMaskKeyDown
+        self._gmon = NSEvent.addGlobalMonitorForEventsMatchingMask_handler_(mask, self._on_event)
+        self._lmon = NSEvent.addLocalMonitorForEventsMatchingMask_handler_(mask, self._on_event_local)
         rumps.Timer(self._refresh, 0.2).start()
 
         # 錄音波形浮動指示器
@@ -261,20 +262,37 @@ class VoiceApp(rumps.App):
         subprocess.run(["open", "-a", "TextEdit", REPLACE_FILE])
 
     # ---- 熱鍵（toggle）----
-    def _on_flags(self, event):
-        # 右 ⌘ 按下 → 開始/停止聽寫；右 ⌥ 按下 → 跳出快速加詞視窗
+    def _on_event(self, event):
+        # 只在「單純點一下右⌘/右⌥、中間沒按別的鍵」才觸發
         try:
+            if event.type() == NSEventTypeKeyDown:
+                # 按修飾鍵期間又按了實體鍵 → 這是組合鍵（Cmd+C 之類），標記為不單純
+                if self._rcmd_down:
+                    self._rcmd_clean = False
+                if self._ropt_down:
+                    self._ropt_clean = False
+                return
             kc, flags = event.keyCode(), event.modifierFlags()
-            if kc == RIGHT_CMD_KEYCODE and (flags & CMD_FLAG):
-                self.engine.toggle()
-            elif kc == RIGHT_OPT_KEYCODE and (flags & OPT_FLAG):
-                self.quick_add(None)
+            if kc == RIGHT_CMD_KEYCODE:
+                if flags & CMD_FLAG:                          # 右⌘ 按下
+                    self._rcmd_down, self._rcmd_clean = True, True
+                else:                                          # 右⌘ 放開
+                    if self._rcmd_down and self._rcmd_clean:
+                        self.engine.toggle()
+                    self._rcmd_down = False
+            elif kc == RIGHT_OPT_KEYCODE:
+                if flags & OPT_FLAG:                           # 右⌥ 按下
+                    self._ropt_down, self._ropt_clean = True, True
+                else:                                          # 右⌥ 放開
+                    if self._ropt_down and self._ropt_clean:
+                        self.quick_add(None)
+                    self._ropt_down = False
         except Exception as e:
             print(f"[err] 熱鍵處理：{e}")
 
-    def _on_flags_local(self, event):
-        self._on_flags(event)
-        return event        # 本地監看必須回傳事件，否則會吞掉
+    def _on_event_local(self, event):
+        self._on_event(event)
+        return event        # 本地監看必須回傳事件，否則會吞掉按鍵
 
     def quit(self, _):
         rumps.quit_application()
