@@ -97,7 +97,8 @@ def tidy(text):
     if not text:
         return text
     text = re.sub(r"^[嗯呃欸啊]+[，,、。 \t]*", "", text)                     # 去開頭語氣詞
-    text = re.sub(r"(\S+)(?:\s+\1){2,}", r"\1", text)                        # 收掉連續重複的疊字幻覺
+    text = re.sub(r"(\S+)(?:\s+\1){2,}", r"\1", text)                        # 收掉有空白分隔的疊字（英文）
+    text = re.sub(r"(.{2,20}?)\1{3,}", r"\1", text)                          # 收掉中文等無空白的長串重複片語（重複4次以上）
     # 半形標點 → 全形（僅在中文字旁；只吃空格不吃換行，保住分段）
     text = re.sub(r"([一-鿿])[ \t]*([,.!?:;])", lambda m: m.group(1) + PUNCT[m.group(2)], text)
     text = re.sub(r"([,.!?:;])[ \t]*([一-鿿])", lambda m: PUNCT[m.group(1)] + m.group(2), text)
@@ -259,6 +260,7 @@ class Engine:
                 path_or_hf_repo=MODEL,
                 language=LANGUAGE,
                 initial_prompt=INITIAL_PROMPT + load_phrases(),
+                condition_on_previous_text=False,   # 降低結尾「鬼打牆」重複幻覺
             )
             raw = segments_to_text(result)           # 依停頓自動分段
             text = tidy(self.cc.convert(raw))
