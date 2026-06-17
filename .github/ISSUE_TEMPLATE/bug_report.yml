@@ -1,0 +1,68 @@
+name: 問題回報 Bug Report
+description: 回報使用語音輸入時遇到的問題
+title: "[問題] "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        感謝你回報！請盡量填完下面幾項，越完整越好查到原因。
+  - type: textarea
+    id: what
+    attributes:
+      label: 發生了什麼問題？
+      description: 簡單描述狀況
+      placeholder: 例如「按了右⌘沒反應」、「結尾跑出一長串重複的字」、「App 卡住關不掉」
+    validations:
+      required: true
+  - type: dropdown
+    id: first-time
+    attributes:
+      label: 是第一次使用就發生嗎？
+      description: 第一次使用會下載約 1.5GB 模型，期間圖示會轉、熱鍵沒反應屬正常
+      options:
+        - 是，第一次用就這樣
+        - 否，之前用過正常
+        - 不確定
+    validations:
+      required: true
+  - type: dropdown
+    id: icon
+    attributes:
+      label: 發生當下，右上角選單列的圖示是哪個？
+      options:
+        - 🎤 待機
+        - 🔴 錄音中
+        - ⏳ 轉錄中
+        - ⬇️ 下載模型中
+        - ⚠️ 錯誤
+        - 沒注意 / 不確定
+    validations:
+      required: true
+  - type: dropdown
+    id: fullscreen
+    attributes:
+      label: 當時有沒有開全螢幕的軟體？
+      description: 例如直播軟體、簡報、全螢幕影片
+      options:
+        - 有
+        - 沒有
+        - 不確定
+  - type: input
+    id: mac
+    attributes:
+      label: 你的 Mac 與系統版本
+      placeholder: 例如 MacBook Air M2、macOS 14.6（不知道可留空）
+  - type: textarea
+    id: steps
+    attributes:
+      label: 怎麼重現？（做了哪些步驟會發生）
+      placeholder: |
+        1. …
+        2. …
+        3. …
+  - type: input
+    id: workaround
+    attributes:
+      label: 你後來怎麼處理的？
+      placeholder: 例如：重開機 / 用 Command+Option+Esc 強制結束 / 等它自己好
