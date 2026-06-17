@@ -81,5 +81,9 @@ Whisper（mlx-whisper，large-v3-turbo）負責辨識，opencc 簡轉繁，pynpu
 
 ---
 
+完整更新紀錄見 [CHANGELOG.md](CHANGELOG.md)。
+
+---
+
 作者：陳沛孺（Penny）｜AI應用講師、閱讀塗鴉實驗室創辦人
 這是個人實驗作品，免費分享，歡迎自用與改造。

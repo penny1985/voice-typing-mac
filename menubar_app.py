@@ -16,7 +16,7 @@ from AppKit import (
     NSEventTypeKeyDown, NSView, NSPanel, NSColor, NSBezierPath,
     NSScreen, NSBackingStoreBuffered, NSStatusWindowLevel,
     NSWindowStyleMaskBorderless, NSWindowCollectionBehaviorCanJoinAllSpaces,
-    NSWindowCollectionBehaviorStationary,
+    NSWindowCollectionBehaviorStationary, NSMenu, NSMenuItem,
 )
 from Foundation import NSMakeRect
 
@@ -101,6 +101,7 @@ class VoiceApp(rumps.App):
         NSApplication.sharedApplication().setActivationPolicy_(
             NSApplicationActivationPolicyAccessory
         )
+        self._install_edit_menu()   # 讓加詞視窗的輸入框能用 Cmd+C/V/A/X
         request_accessibility()
         load_phrases()        # 確保 慣用語.txt 存在
         load_replacements()   # 確保 修正規則.txt 存在
@@ -176,6 +177,27 @@ class VoiceApp(rumps.App):
                 self.panel.orderFrontRegardless()
         elif self.panel.isVisible():
             self.panel.orderOut_(None)
+
+    def _install_edit_menu(self):
+        """裝一個標準『編輯』選單，讓對話框輸入框支援 Cmd+C/V/A/X/Z。
+        背景 App 不顯示選單列，但快捷鍵會生效。"""
+        app = NSApplication.sharedApplication()
+        mainmenu = NSMenu.alloc().init()
+        edit_item = NSMenuItem.alloc().init()
+        mainmenu.addItem_(edit_item)
+        edit_menu = NSMenu.alloc().initWithTitle_("Edit")
+        for title, sel, key in [
+            ("Undo", "undo:", "z"),
+            ("Cut", "cut:", "x"),
+            ("Copy", "copy:", "c"),
+            ("Paste", "paste:", "v"),
+            ("Select All", "selectAll:", "a"),
+        ]:
+            edit_menu.addItem_(
+                NSMenuItem.alloc().initWithTitle_action_keyEquivalent_(title, sel, key)
+            )
+        edit_item.setSubmenu_(edit_menu)
+        app.setMainMenu_(mainmenu)
 
     # ---- 狀態顯示 ----
     def _record_status(self, state, text=None):
